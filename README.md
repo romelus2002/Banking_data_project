@@ -139,6 +139,6 @@ banking-modern-datastack/
 
 ---
 
-**Author**: *Jaya Chandra Kadiveti*  
-**LinkedIn**: [jayachandrakadiveti](https://www.linkedin.com/in/jayachandrakadiveti/)  
-**Contact**: [Kadivetijayachandra@gmail.com](mailto:Kadivetijayachandra@gmail.com)  
+**Author**: *Romelus Takouda*  
+**LinkedIn**: [Romelus Takouda](https://www.linkedin.com/in/takouda-deffo-romelus-531460145)  
+**Contact**: [+8197191253](mailto:romitakouda@gmail.com)  
