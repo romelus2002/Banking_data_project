@@ -1,144 +1,249 @@
-# 🏦 Banking Modern Data Stack
+🚀 Azure-Native Real-Time Banking Data Platform
+📌 Project Overview
 
-![Snowflake](https://img.shields.io/badge/Snowflake-29B5E8?logo=snowflake&logoColor=white)
-![DBT](https://img.shields.io/badge/dbt-FF694B?logo=dbt&logoColor=white)
-![Apache Airflow](https://img.shields.io/badge/Apache%20Airflow-017CEE?logo=apacheairflow&logoColor=white)
-![Apache Kafka](https://img.shields.io/badge/Apache%20Kafka-231F20?logo=apachekafka&logoColor=white)
-![Debezium](https://img.shields.io/badge/Debezium-EF3B2D?logo=apache&logoColor=white)
-![Python](https://img.shields.io/badge/Python-3776AB?logo=python&logoColor=white)
-![Docker](https://img.shields.io/badge/Docker-2496ED?logo=docker&logoColor=white)
-![Git](https://img.shields.io/badge/Git-F05032?logo=git&logoColor=white)
-![CI/CD](https://img.shields.io/badge/CI%2FCD-000000?logo=githubactions&logoColor=white)
+This project implements a fully Azure-native modern data platform that simulates a real-world banking system (customers, accounts, transactions) and processes both real-time and batch data using scalable Microsoft Azure services.
 
----
+The platform demonstrates:
 
-## 📌 Project Overview
-This project demonstrates an **end-to-end modern data stack pipeline** for a **Banking domain**.  
-We simulate **customer, account, and transaction data**, stream changes in real time, transform them into analytics-ready models, and visualize insights — following **best practices of CI/CD and data warehousing**.
+Change Data Capture (CDC) from Azure SQL
 
-👉 Think of it as a **real-world banking data ecosystem** built on modern data tools.  
+Real-time and incremental ingestion
 
----
+Bronze → Silver → Gold Lakehouse architecture
 
-## 🏗️ Architecture  
+SCD Type-2 historical tracking
 
-<img width="5647" height="3107" alt="Architecture" src="https://github.com/user-attachments/assets/7521ea8a-451e-46ff-9db0-71dd6ddf8181" />
+Enterprise orchestration and monitoring
+
+CI/CD automation
+
+Secure, governed analytics delivery
+
+🏗️ Azure Architecture
+Data Generator (Python + Faker)
+        ↓
+Azure SQL Database (OLTP, CDC Enabled)
+        ↓
+Azure Data Factory (Incremental / CDC Extraction)
+        ↓
+Azure Data Lake Storage Gen2 (Bronze - Delta)
+        ↓
+Azure Databricks (Spark + Delta Lake)
+        ↓
+Bronze → Silver → Gold Transformations
+        ↓
+Azure Synapse Analytics / Databricks SQL
+        ↓
+Power BI Dashboards
+        ↓
+Azure DevOps (CI/CD)
+
+⚡ Azure Tech Stack
+Layer	Azure Service
+OLTP Source	Azure SQL Database
+CDC / Ingestion	Azure Data Factory
+Storage	Azure Data Lake Storage Gen2
+Processing	Azure Databricks
+Data Format	Delta Lake
+Orchestration	Azure Data Factory
+Data Warehouse	Azure Synapse Analytics
+BI	Power BI
+CI/CD	Azure DevOps
+Security	Microsoft Entra ID + Managed Identity
+Governance	Microsoft Purview
+🔄 End-to-End Pipeline Flow
+1️⃣ Data Simulation
+
+Python + Faker generates:
+
+Customers
+
+Accounts
+
+Transactions
+
+Data inserted into Azure SQL Database.
+
+Azure SQL acts as the transactional OLTP system with ACID guarantees.
+
+2️⃣ Change Data Capture (CDC)
+
+CDC is enabled on Azure SQL:
+
+EXEC sys.sp_cdc_enable_db;
+
+EXEC sys.sp_cdc_enable_table
+    @source_schema = 'dbo',
+    @source_name   = 'transactions',
+    @role_name     = NULL;
 
 
-**Pipeline Flow:**
-1. **Data Generator** → Simulates banking transactions, accounts & customers (via Faker).  
-2. **Kafka + Debezium** → Streams change data (CDC) into MinIO (S3-compatible storage).  
-3. **Airflow** → Orchestrates data ingestion & snapshots into Snowflake.  
-4. **Snowflake** → Cloud Data Warehouse (Bronze → Silver → Gold).  
-5. **DBT** → Applies transformations, builds marts & snapshots (SCD Type-2).  
-6. **CI/CD with GitHub Actions** → Automated tests, build & deployment.  
+Azure Data Factory reads from CDC tables and extracts incremental changes.
 
----
+3️⃣ Bronze Layer (Raw Data)
 
-## ⚡ Tech Stack
-- **Snowflake** → Cloud Data Warehouse  
-- **DBT** → Transformations, testing, snapshots (SCD Type-2)  
-- **Apache Airflow** → Orchestration & DAG scheduling  
-- **Apache Kafka + Debezium** → Real-time streaming & CDC  
-- **MinIO** → S3-compatible object storage  
-- **Postgres** → Source OLTP system  
-- **Python (Faker)** → Data simulation  
-- **Docker & docker-compose** → Containerized setup  
-- **Git & GitHub Actions** → CI/CD workflows  
+ADF loads raw incremental data into:
 
----
+Azure Data Lake Storage Gen2 (Delta format)
 
-## ✅ Key Features
-- **PostgreSQL OLTP**: Source relational database with ACID guarantees (customers, accounts, transactions)  
-- **Simulated banking system**: customers, accounts, and transactions  
-- **Change Data Capture (CDC)** via Kafka + Debezium (capturing Postgres WAL)  
-- **Raw → Staging → Fact/Dimension** models in DBT  
-- **Snapshots for history tracking** (slowly changing dimensions)  
-- **Automated pipeline orchestration** using Airflow  
-- **CI/CD pipeline** with dbt tests + GitHub Actions  
 
----
+Bronze layer characteristics:
 
-## 📂 Repository Structure
-```text
-banking-modern-datastack/
-├── .github/workflows/         # CI/CD pipelines (ci.yml, cd.yml)
-├── banking_dbt/              # DBT project
-│   ├── models/
-│   │   ├── staging/           # Staging models
-│   │   ├── marts/             # Facts & dimensions
-│   │   └── sources.yml
-│   ├── snapshots/             # SCD2 snapshots
-│   └── dbt_project.yml
-├── consumer
-│   └── kafka_to_minio.py
-├── data-generator/            # Faker-based data simulator
+Immutable raw records
+
+Metadata columns (load timestamp, batch ID)
+
+Partitioned by ingestion date
+
+4️⃣ Silver Layer (Cleaned & Validated)
+
+Azure Databricks performs:
+
+Schema validation
+
+Deduplication
+
+Null handling
+
+Data quality checks
+
+Standardization
+
+Stored as optimized Delta tables.
+
+5️⃣ Gold Layer (Business Models)
+
+Business-ready tables include:
+
+dim_customers (SCD Type-2)
+
+dim_accounts
+
+fact_transactions
+
+SCD Type-2 implemented using Delta MERGE:
+
+MERGE INTO dim_customer AS target
+USING updates AS source
+ON target.customer_id = source.customer_id
+WHEN MATCHED AND target.hash <> source.hash THEN
+  UPDATE SET current_flag = false
+WHEN NOT MATCHED THEN
+  INSERT (...)
+
+
+Gold layer supports analytics, reporting, and regulatory audit requirements.
+
+📊 Analytics Layer
+
+Gold tables exposed via:
+
+Azure Synapse Dedicated SQL Pool
+OR
+
+Databricks SQL Warehouse
+
+Connected to Power BI for:
+
+Customer lifetime value analysis
+
+Account balance trends
+
+Transaction volume monitoring
+
+Historical account tracking
+
+Fraud detection indicators
+
+🔐 Security & Governance
+
+Microsoft Entra ID authentication
+
+Managed Identity for service-to-service communication
+
+Azure Key Vault for secret management
+
+Row-Level Security (RLS)
+
+Dynamic Data Masking
+
+Transparent Data Encryption (TDE)
+
+Microsoft Purview for lineage and catalog
+
+Azure SQL auditing enabled
+
+🔁 CI/CD with Azure DevOps
+Continuous Integration (CI)
+
+Lint notebooks
+
+Validate Spark transformations
+
+Run unit tests
+
+Validate SQL scripts
+
+Continuous Deployment (CD)
+
+Deploy Databricks notebooks
+
+Deploy ADF pipelines
+
+Deploy Synapse objects
+
+Promote Dev → Test → Prod
+
+📂 Repository Structure
+azure-banking-data-platform/
+├── data-generator/
 │   └── faker_generator.py
-├── docker/                    # Airflow DAGs, plugins, etc.
-│   ├── dags/                  # DAGs (minio_to_snowflake, scd_snapshots)
-├── kafka-debezium/            # Kafka connectors & CDC logic
-│   └── generate_and_post_connector.py
-├── postgres/                  # Postgres schema (OLTP DDL & seeds)
-│   └── schema.sql
-├── .gitignore
-├── docker-compose.yml         # Containerized infra
-├── dockerfile-airflow.dockerfile
-├── requirements.txt
+├── databricks/
+│   ├── bronze_ingestion.py
+│   ├── silver_transformations.py
+│   ├── gold_models.py
+│   └── scd2_logic.py
+├── adf/
+│   └── azure_sql_cdc_pipeline.json
+├── synapse/
+│   └── warehouse_models.sql
+├── devops/
+│   ├── ci-pipeline.yml
+│   └── cd-pipeline.yml
+├── infrastructure/
+│   └── bicep_or_terraform_templates/
 └── README.md
-```
 
----
+🏆 Key Capabilities Demonstrated
 
-## ⚙️ Step-by-Step Implementation  
+Azure SQL CDC implementation
 
-### **1. Data Simulation**  
-- Generated synthetic banking data (**customers, accounts, transactions**) using **Faker**.  
-- Inserted data into **PostgreSQL (OLTP)** so the system behaves like a real transactional database (**ACID, constraints**).  
-- Controlled generation via `config.yaml`.  
+Incremental data processing
 
----
+Enterprise Lakehouse design
 
-### **2. Kafka + Debezium CDC**  
-- Set up **Kafka Connect & Debezium** to capture changes from **Postgres**.  
-- Streamed **CDC events** into **MinIO**.  
+Delta Lake performance optimization
 
----
+Historical data tracking (SCD Type-2)
 
-### **3. Airflow Orchestration**  
-- Built DAGs to:  
-  - Ingest **MinIO data → Snowflake (Bronze)**.  
-  - Schedule **snapshots & incremental loads**.  
+Secure cloud-native architecture
 
----
+Automated DevOps pipeline
 
-### **4. Snowflake Warehouse**  
-- Organized into **Bronze → Silver → Gold layers**.  
-- Created **staging schemas** for ingestion.  
+Governed and auditable analytics platform
 
----
+🎯 Business Value
 
-### **5. DBT Transformations**  
-- **Staging models** → cleaned source data.  
-- **Dimension & fact models** → built marts.  
-- **Snapshots** → tracked history of accounts & customers.  
+This platform demonstrates the ability to:
 
----
+Architect secure Azure-native data solutions
 
-### **6. CI/CD with GitHub Actions**  
-- **ci.yml** → Lint, dbt compile, run tests.  
-- **cd.yml** → Deploy DAGs & dbt models on merge.  
+Handle high-volume transactional systems
 
----
+Implement reliable CDC pipelines
 
-## 📊 Final Deliverables  
-- **Automated CDC pipeline** from Postgres → Snowflake  
-- **DBT models** (facts, dimensions, snapshots)  
-- **Orchestrated DAGs in Airflow**  
-- **Synthetic banking dataset** for demos  
-- **CI/CD workflows** ensuring reliability  
+Build scalable Lakehouse architectures
 
----
+Deliver analytics-ready datasets
 
-**Author**: *Romelus Takouda*  
-**LinkedIn**: [Romelus Takouda](https://www.linkedin.com/in/takouda-deffo-romelus-531460145)  
-**Contact**: [+8197191253](mailto:romitakouda@gmail.com)  
+Apply enterprise-grade security and governance controls
