@@ -38,6 +38,12 @@ Power BI Dashboards
         ↓
 Azure DevOps (CI/CD)
 
+<img width="1536" height="1024" alt="ChatGPT Image Feb 18, 2026, 05_56_27 AM" src="https://github.com/user-attachments/assets/0171260b-c4a7-486d-8e7e-7b1fed89090f" />
+
+
+
+
+
 ⚡ Azure Tech Stack
 Layer	Azure Service
 OLTP Source	Azure SQL Database
